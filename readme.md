@@ -1,17 +1,18 @@
-# Laravel Backend for laravel 5.6
+# Laravel Backend for Laravel 5.6
 ## #Steps to install
 ### 1) Clone current repository
-    git@github.com:ahmed-al-bermawy/laravel-backend.git
+    git clone git@github.com:ahmed-al-bermawy/laravel-backend.git
 
 ### 2) Install dependencies
     composer install
 
-### 3) Change database name, username and password in .env file
+### 3) Change database name, username and password in .env.example file
 for example
 
     DB_DATABASE=backend
     DB_USERNAME=root
     DB_PASSWORD=root
+then save it .env
 
 ### 4) Generate Key
 
