@@ -24,9 +24,9 @@ Route::get('/home', 'HomeController@index')->name('home');
 // this middleware for backend authenticated users
 Route::group(['middleware' => ['auth']], function () {
     // Dashboard landing page
-    Route::get('/admin/dashboard', 'BackendHomeController@index');
+    Route::get('/backend/dashboard', 'BackendHomeController@index');
     //Articles Routes
-    Route::resource('/admin/articles', 'ArticlesController');
+    Route::resource('/backend/articles', 'ArticlesController');
     //Toggle Active
     Route::post('/common/toggle_active', 'CommonController@toggleActive');
 });
@@ -34,16 +34,16 @@ Route::group(['middleware' => ['auth']], function () {
 // this middleware is just for admin
 Route::group(['middleware' => ['admin']], function () {
     //Admins Roots
-    Route::resource('/admin/admins', 'AdminsController');
+    Route::resource('/backend/admins', 'AdminsController');
     //Change Password for Admin
-    Route::post('/admin/admins/change_password', 'AdminsController@changePassword');
+    Route::post('/backend/admins/change_password', 'AdminsController@changePassword');
 });
 
 Route::get('/test', 'TestController@index');
 
-Route::get('/admin', function () {
+Route::get('/backend', function () {
     if(Auth::user())
-        return Redirect::to('/admin/dashboard');
+        return Redirect::to('/backend/dashboard');
     else
         return Redirect::to('login');
 });

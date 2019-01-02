@@ -1,6 +1,6 @@
 <!-- Left side column. contains the sidebar -->
 <aside class="main-sidebar" data-widget="tree">
-    <!-- sidebar: style can be found in sidebar.less -->
+    <!-- sidebar: style can be found in sidebar.less -->`
     <section class="sidebar">
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel">
@@ -50,21 +50,21 @@
             <li class="header">DASHBOARD</li>
             <!-- Optionally, you can add icons to the links -->
             @if(roles() == 'super_admin' ||  roles() == 'admin'  ||  roles() == 'editor' )
-            <li class="{{ (Request::segment(2) == 'articles') ? 'active' : '' }}"><a href="/admin/articles"><i class="fa fa-book"></i><span>Artikel</span></a></li>
+                <li class="{{ (Request::segment(2) == 'articles') ? 'active' : '' }}"><a href="{{ url('/backend/articles') }}"><i class="fa fa-book"></i><span>Articles</span></a></li>
             @endif
 
             @if(roles() == 'super_admin' || roles() == 'admin')
-            <li class="treeview {!! (Request::segment(2) == 'admins') ? 'menu-open' : '' !!}">
-                <a href="#">
-                    <i class="fa fa-user" aria-hidden="true"></i><span>Administrator</span>
+                <li class="treeview {!! (Request::segment(2) == 'admins') ? 'menu-open' : '' !!}">
+                    <a href="#">
+                        <i class="fa fa-user" aria-hidden="true"></i><span>Administrator</span>
                     <span class="pull-right-container">
                       <i class="fa fa-angle-left pull-right"></i>
                     </span>
-                </a>
-                <ul class="treeview-menu " {!! (Request::segment(2) == 'admins') ? 'style="display: block"' : '' !!}>
-                    <li class="{{ (Request::segment(2) == 'admins') ? 'active' : '' }}"><a href="/admin/admins"></i> Admins</a></li>
-                </ul>
-            </li>
+                    </a>
+                    <ul class="treeview-menu " {!! (Request::segment(2) == 'admins') ? 'style="display: block"' : '' !!}>
+                        <li class="{{ (Request::segment(2) == 'admins') ? 'active' : '' }}"><a href="{{ url('/backend/admins') }}"></i> Admins</a></li>
+                    </ul>
+                </li>
             @endif
         </ul><!-- /.sidebar-menu -->
     </section>

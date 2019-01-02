@@ -22,9 +22,9 @@ class ArticlesController extends Controller
     private $table_name;
     private $table_pk;
     private $table_model;
-    private $view_page;
     private $table_column;
     private $inputs_validation;
+    private $inputs_validation_messages;
 
     public function __construct()
     {
@@ -32,15 +32,15 @@ class ArticlesController extends Controller
         $this->view = true;
         $this->delete = true;
         $this->edit = true;
-        $this->view_page = true;
 
-        $this->path = 'admin/articles';
+        $this->path = 'backend/articles/';
         $this->image_path = 'uploads/articles/';
         $this->page_title = 'Articles';
         $this->table_model = new Articles();
         $this->table_name = $this->table_model->TableName();
         $this->table_pk = $this->table_model->TablePK();
-        $this->inputs_validation = ['title'  =>'required|min:3'];
+        $this->inputs_validation = ['title' =>'required|min:3','image' => 'image|mimes:jpeg,png,jpg|max:1024'];
+        $this->inputs_validation_messages = ['image.mimes' =>'Allowed Extensions:jpeg,png,jpg', 'image.max' => 'Max Size 1MB' ];
 
         $this->table_column = [
             [
@@ -88,7 +88,7 @@ class ArticlesController extends Controller
                 'canView' => true,
                 'canEdit' => true,
                 'file_path' => $this->image_path,
-                'message' => 'Allowed Extinsion:jpeg,png,jpg,gif - Max Size 5MB',
+                'message' => 'Allowed Extensions:jpeg,png,jpg - Max Size 1MB',
             ],
         ];
     }
@@ -108,7 +108,7 @@ class ArticlesController extends Controller
         $display['create'] = $this->create;
         $display['delete'] = $this->delete;
         $display['edit'] = $this->edit;
-        $display['view_page'] = $this->view_page;
+        $display['view'] = $this->view;
         $display['message'] = session('message');
         //Search on database
         $keyword = $request->input('q');
@@ -149,7 +149,7 @@ class ArticlesController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,$this->inputs_validation);
+        $this->validate($request,$this->inputs_validation,$this->inputs_validation_messages);
         $article = $this->table_model->create($request->all());
 
         $common = New CommonController();
@@ -170,23 +170,10 @@ class ArticlesController extends Controller
         $display['page_name'] = $this->page_title;
         $display['parent_page'] = $this->page_title;
         $display['page_title'] = $this->page_title . ' | Details';
+        $display['array'] = $article = Articles::where('id',$id)->first()->toArray();
+        $display['array']['image'] = $this->image_path.$display['array']['image'];
 
-        $display['article'] = $article = Articles::where('id',$id)->first()->toArray();
-        $display['article_image'] = ArticleImage::select('path as image')->where('article_id',$id)->get()->toArray();
-        $display['blueprint'] = Blueprint::select('path as blueprint_image')->where('ordernumber',$article['ordernumber'])->get()->toArray();
-        $display['certification'] = Certification::select('name','description','translation_description_us','state','document')->where('article_id',$id)->orderBy('state')->get()->toArray();
-        $display['download'] = Download::select('language','path','description','linktext','translation')->where('article_id',$id)->get()->toArray();
-        $display['feature'] = Feature::select('name','value','translation_name_us','translation_value_us')->where('article_id',$id)->get()->toArray();
-        $display['symbol'] = Symbol::select('image_path as symbol_image','subline','group_name','option_name','tooltip_headline','tooltip_headline_us','tooltip_text','tooltip_text_us','order')->where('article_id',$id)->orderBy('order')->get()->toArray();
-        $display['related'] = Related::select('related_article_id','ordernumber')
-            ->join('articles', 'related.article_id', '=', 'articles.id')
-            ->where('article_id',$id)->get()->toArray();
-        $display['category'] = RelCategoryArticle::select('category.*')
-            ->join('category', 'rel_category_article.category_id', '=', 'category.id')
-            ->where('article_id',$id)->first()->toArray();
-
-
-        return view('template.backend.article.view')->with($display);
+        return view('template.backend.view')->with($display);
     }
 
     /**
@@ -217,6 +204,7 @@ class ArticlesController extends Controller
     public function update(Request $request, $id)
     {
         $data = $this->table_model->findOrFail($id);
+        $this->validate($request,$this->inputs_validation,$this->inputs_validation_messages);
         $data->update($request->all());
         
         $common = New CommonController();

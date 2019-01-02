@@ -5,7 +5,7 @@
     @elseif(isset($task['canAdd']) && isset($formAction) && $task['canAdd'] == false && $formAction == 'create')
         <?php /* for create form and you didn't want to show input in form  */ ?>
     @else
-        @if (($task['type'] == 'text' || $task['type'] == 'textarea' || $task['type'] == 'email') && $task['dbName'] != 'cpts'  )
+        @if (($task['type'] == 'text' || $task['type'] == 'textarea' || $task['type'] == 'email') )
             <!-- Form Input for Text and Textarea-->
             <div class="form-group">
                 {!! Form::label($task['dbName'],$task['title'].' : ') !!}
@@ -14,7 +14,6 @@
                 @endif
                 {!! Form::{$task['type']}($task['dbName'],null,['class' => 'form-control', 'data-id' => $task['dbName']]) !!}
             </div>
-
         @elseif($task['type'] == 'date')
             <!-- Form Input for Date -->
             <div class="form-group">
@@ -38,14 +37,14 @@
 	              		</span>
                         </div>
                     @else
-                        {!! Form::input($task['type'],$task['dbName'],Carbon\Carbon::now()->format('Y-m-d'),['class' => 'form-control']) !!}
+                        {!! Form::input($task['type'],$task['dbName'],Carbon\Carbon::now()->format('Y-d-m'),['class' => 'form-control']) !!}
                     @endif
 
                 @else
                     @if(isset($task['format']) && $task['format'] == 'dateTime')
-                        {!! Form::input('text',$task['dbName'],Carbon\Carbon::now()->format('Y-m-d H:i:s'),['class' => 'form-control']) !!}
+                        {!! Form::input('text',$task['dbName'],Carbon\Carbon::now()->format('Y-d-m H:i:s'),['class' => 'form-control']) !!}
                     @elseif(isset($task['format']) && $task['format'] == 'date')
-                        {!! Form::input('text',$task['dbName'],Carbon\Carbon::now()->format('Y-m-d'),['class' => 'form-control']) !!}
+                        {!! Form::input('text',$task['dbName'],Carbon\Carbon::now()->format('Y-d-m'),['class' => 'form-control']) !!}
                     @else
                         {!! Form::input($task['type'],$task['dbName'],date('Y-m-d', strtotime($data[$task['dbName']])),['class' => 'form-control']) !!}
                     @endif
@@ -100,6 +99,32 @@
                             {
                                 echo '<a data-fancybox href="'.$url_path.'" ><img class="img-responsive thumbnail" src="'.$url_path.'" alt=""></a>';
                             }
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
+
+        @elseif($task['type'] == 'file')
+            <!-- Form Input for file -->
+            <div class='row'>
+                <div class="form-group col-lg-6 col-xs-12">
+                    {!! Form::label($task['dbName'],$task['title'].' : ') !!}
+                    @if(isset($task['message']) && $task['message'] != '')
+                        <code>{!! $task['message'] !!}</code>
+                    @endif
+                    {!! Form::file($task['dbName'],['class' => '']) !!}
+                </div>
+                <div class="col-lg-6 col-xs-12">
+                    <?php
+                    if (!empty($data[$task['dbName']]))
+                    {
+                        $url_path = url($task['file_path']).'/'.$data[$task['dbName']];
+                        $public_path = public_path($task['file_path'].'/'.$data[$task['dbName']]);
+
+                        if (File::exists($public_path))
+                        {
+                            echo '<a href="'.$url_path.'" target="_blank" >'.$url_path.'</a>';
                         }
                     }
                     ?>

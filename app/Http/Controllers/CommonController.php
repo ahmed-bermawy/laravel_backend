@@ -38,33 +38,36 @@ class CommonController extends Controller
 		return json_encode($array_of_results);
     }
 
-	public function uploadImage(Request $request,$table,$image_column,$id,$folder_path)
+	public function uploadImage(Request $request,$dbTableName,$imageColumn,$id,$path)
 	{
-		if ($request->hasFile('image'))
+		if ($request->hasFile($imageColumn))
 		{
 			// append timestamp to image name
-			$file_name = time().'_'.$request->image->getClientOriginalName();
+			$file_name = time().'_'.$request->$imageColumn->getClientOriginalName();
 			// move image to folder path
-			$request->image->move(public_path($folder_path), $file_name);
+			$request->$imageColumn->move(public_path($path), $file_name);
 			// save image
-			return DB::table($table)->where('id', $id)->update([$image_column => $file_name]);
+			return DB::table($dbTableName)->where('id', $id)->update([$imageColumn => $file_name]);
 		}
 	}
 
-	public function updateImage(Request $request,$table,$image_column,$id,$folder_path)
+	public function updateImage(Request $request,$dbTableName,$imageColumn,$id,$path)
 	{
-		if ($request->hasFile('image'))
+		if ($request->hasFile($imageColumn))
 		{
 			// append timestamp to image name
-			$file_name = time().'_'.$request->image->getClientOriginalName();
+			$file_name = time().'_'.$request->$imageColumn->getClientOriginalName();
 			// move image to folder path
-			$request->image->move(public_path($folder_path), $file_name);
+			$request->$imageColumn->move(public_path($path), $file_name);
 			// get item data
-			$object = DB::table($table)->where('id', $id)->first();
+			$object = DB::table($dbTableName)->where('id', $id)->first();
 			// delete old image file
-			\File::delete(public_path('uploads/profiles/').$object->$image_column);
+			if ($object->$imageColumn)
+			{
+				\File::delete(public_path('uploads/profiles/').$object->$imageColumn);
+			}
 			// save new image
-			return DB::table($table)->where('id', $id)->update([$image_column => $file_name]);
+			return DB::table($dbTableName)->where('id', $id)->update([$imageColumn => $file_name]);
 		}
 	}
 }

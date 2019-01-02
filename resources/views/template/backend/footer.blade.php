@@ -4,5 +4,5 @@
         <a href="#" target="_blank">{{ \Config::get('app.name') }}</a>
     </div>
     <!-- Default to the left -->
-    <strong>Copyright © {!! date('Y') !!} <a href="https://adminlte.io/">AdminLTE.IO</a>.</strong> All rights reserved.
+    <strong>Copyright © {!! date('Y') !!} <a target="_blank" href="https://adminlte.io/">AdminLTE.IO</a>.</strong> All rights reserved.
 </footer>

@@ -17,13 +17,17 @@ class AdminsController extends Controller
     private $page_title;
     private $table_name;
     private $table_pk;
+    private $image_path;
     private $table_model;
     private $inputs_validation;
+    private $inputs_edit_validation;
+    private $inputs_validation_messages;
     private $table_column;
-    
-    public function __construct() 
+
+    public function __construct()
     {
-        $this->path = 'admin/admins';
+        $this->path = 'backend/admins/';
+        $this->image_path = 'uploads/profiles/';
         $this->page_title = 'Admin';
         $this->table_model = new User();
         $this->table_name = $this->table_model->TableName();
@@ -41,66 +45,68 @@ class AdminsController extends Controller
         $roles_query = DB::select('select '.$this->roles_table_pk.' as "key", name as "value" from '.$this->roles_table_name.' order by '.$this->roles_table_pk);
         $roles_values = json_decode(json_encode($roles_query),true);
 
-        $this->inputs_validation = ['first_name'=>'required|min:3','last_name'  =>'required|min:3','email' =>'required|email','password' =>'required'];
-        $this->inputs_edit_validation = ['first_name'=>'required|min:3','last_name'  =>'required|min:3'];
+        $this->inputs_validation = ['first_name'=>'required|min:3','last_name'  =>'required|min:3','email' =>'required|email','password' =>'required','roles'=>'required','image' => 'image|mimes:jpeg,png,jpg|max:2048'];
+        $this->inputs_edit_validation = ['first_name'=>'required|min:3','last_name'  =>'required|min:3','roles'=>'required','image' => 'image|mimes:jpeg,png,jpg|max:2048'];
+        $this->inputs_validation_messages = ['image.mimes' =>'Allowed Extensions:jpeg,png,jpg', 'image.max' => 'Max Size 2MB' ];
+
         $this->table_column = [
-                [
-                    'dbName' => 'first_name',
-                    'title' => 'First Name',
-                    'type' => 'text',
-                    'canView' => true,
-                    'message' => 'Required',
-                ],
-                [
-                    'dbName' => 'last_name',
-                    'title' => 'Last Name',
-                    'type' => 'text',
-                    'canView' => true,
-                    'message' => 'Required',
-                ],
-                [
-                    'dbName' => 'email',
-                    'title' => 'Email',
-                    'type' => 'text',
-                    'canView' => true,
-                    'canEdit' => false,
-                    'message' => 'Required',
-                ],
-                [
-                    'dbName' => 'password',
-                    'title' => 'Admin Password',
-                    'type' => 'password',
-                    'canView' => false,
-                    'canEdit' => false,
-                    'message' => 'Required',
-                ],
-                [
-                    'dbName' => 'roles',
-                    'title' => 'Roles',
-                    'type' => 'select',
-                    'canView' => false,
-                    //'canOrder' => false,
-                    'canSearch' => false,
-                    'message' => 'Required',
-                    'arrayOfData' => $roles_values,
-                ],
-                [
-                    'dbName' => 'image',
-                    'title' => 'Profile Image',
-                    'type' => 'image',
-                    'canView' => true,
-                    'canEdit' => true,
-                    'file_path' => 'uploads/profiles',
-                    'message' => 'Allowed Extinsion:jpeg,png,jpg,gif - Max Size 5MB',
-                ],
-                [
-                    'dbName' => 'id',
-                    'title' => 'Change Password',
-                    'type' => 'popup',
-                    'canView' => true,
-                    'message' => 'Change Password',
-                    'value' => 'email',
-                ],
+            [
+                'dbName' => 'first_name',
+                'title' => 'First Name',
+                'type' => 'text',
+                'canView' => true,
+                'message' => 'Required',
+            ],
+            [
+                'dbName' => 'last_name',
+                'title' => 'Last Name',
+                'type' => 'text',
+                'canView' => true,
+                'message' => 'Required',
+            ],
+            [
+                'dbName' => 'email',
+                'title' => 'Email',
+                'type' => 'text',
+                'canView' => true,
+                'canEdit' => false,
+                'message' => 'Required',
+            ],
+            [
+                'dbName' => 'password',
+                'title' => 'Admin Password',
+                'type' => 'password',
+                'canView' => false,
+                'canEdit' => false,
+                'message' => 'Required',
+            ],
+            [
+                'dbName' => 'roles',
+                'title' => 'Roles',
+                'type' => 'select',
+                'canView' => false,
+                //'canOrder' => false,
+                'canSearch' => false,
+                'message' => 'Required',
+                'arrayOfData' => $roles_values,
+            ],
+            [
+                'dbName' => 'image',
+                'title' => 'Profile Image',
+                'type' => 'image',
+                'canView' => true,
+                'canEdit' => true,
+                'file_path' => 'uploads/profiles',
+                'message' => 'Allowed Extinsion:jpeg,png,jpg,gif - Max Size 2MB',
+            ],
+            [
+                'dbName' => 'id',
+                'title' => 'Change Password',
+                'type' => 'popup',
+                'canView' => true,
+                'message' => 'Change Password',
+                'value' => 'email',
+            ],
 
         ];
     }
@@ -119,13 +125,14 @@ class AdminsController extends Controller
         $display['message'] = session('message');
         //Search on database
         $keyword = $request->input('q');
-        if ($keyword) 
+        if ($keyword)
         {
             $display['array'] = $this->table_model->SearchByKeyword($keyword)->orderBy($this->table_pk, 'desc')->get();
-        } 
+        }
         else
         {
-            $display['array'] = DB::table($this->table_name)->orderBy($this->table_pk, 'desc')->paginate(20);
+            $display['array'] = $this->table_model->orderBy($this->table_pk, 'desc')->paginate(20);
+            $display['total_result'] = $this->table_model->count();
         }
 
         return view('template.backend.index')->with($display);
@@ -159,11 +166,11 @@ class AdminsController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,$this->inputs_validation);
+        $this->validate($request,$this->inputs_validation,$this->inputs_validation_messages);
 
         $user = \Sentinel::findByCredentials(['email' => $request->email]);
 
-        if ($user) 
+        if ($user)
         {
             return Redirect::back()->withErrors(['Email Already Exist Please Try Another Email']);
         }
@@ -173,23 +180,10 @@ class AdminsController extends Controller
         $role = \Sentinel::findRoleById($role_id);
         $role->users()->attach($user);
 
-        $this->uploadImage($request, $user->id);
+        $common = New CommonController();
+        $common->uploadImage($request,$this->table_name,'image',$user->id,$this->image_path);
 
         return Redirect::to($this->path);
-    }
-
-    public function uploadImage(Request $request,$id)
-    {
-        if ($request->hasFile('image'))
-        {
-            // append timestamp to image name
-            $file_name = time().'_'.$request->image->getClientOriginalName();
-            $request->image->move(public_path('uploads/profiles'), $file_name);
-            // get user data
-            $user =  User::where('id', $id)->first();
-            $user->image = $file_name;
-            return $user->save();
-        }
     }
 
     /**
@@ -200,7 +194,7 @@ class AdminsController extends Controller
      */
     public function show($id)
     {
-        
+
     }
 
     /**
@@ -216,8 +210,8 @@ class AdminsController extends Controller
             return Redirect::to('/');
         }
 
-        // this for select from another 
-        // table the assign value 
+        // this for select from another
+        // table the assign value
         // for select drop down menu
         $get_data = DB::table($this->role_users_table_name)->where($this->role_users_table_pk,$id)->first();
         if(!empty($get_data))
@@ -252,20 +246,25 @@ class AdminsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request,$this->inputs_edit_validation);
+        $this->validate($request,$this->inputs_edit_validation,$this->inputs_validation_messages);
         $data = $this->table_model->findOrFail($id);
 
         $user = \Sentinel::findByCredentials(['email' => $request->email]);
 
-        if ($user) 
+        if ($user)
         {
             return Redirect::to($this->path)->with('message', 'Email Already Exist Please Try Another Email');
         }
 
+        // $result = $request->all();
+        // $new_password = bcrypt($result['password']);
+
+        // $replacements = array('password'=> $new_password);
+        // $new_array = array_replace($result, $replacements);
+
         //check if user have roles
         $check_user_roles = DB::table($this->role_users_table_name)->where($this->role_users_table_pk, $id)->first();
-
-        if (empty($check_user_roles)) 
+        if (empty($check_user_roles))
         {
             DB::table($this->role_users_table_name)->insert(['role_id' => $request['roles'], $this->role_users_table_pk=> $id]);
         }
@@ -274,29 +273,12 @@ class AdminsController extends Controller
             DB::table($this->role_users_table_name)->where($this->role_users_table_pk, $id)->update(['role_id' => $request['roles']]);
         }
 
-
         $data->update($request->all());
 
-        $this->updateImage($request,$id);
+        $common = New CommonController();
+        $common->updateImage($request,$this->table_name,'image',$id,$this->image_path);
 
         return Redirect::to($this->path);
-    }
-
-    public function updateImage(Request $request,$id)
-    {
-        if ($request->hasFile('image'))
-        {
-            // append timestamp to image name
-            $file_name = time().'_'.$request->image->getClientOriginalName();
-            $request->image->move(public_path('uploads/profiles'), $file_name);
-            // get user data
-            $user =  User::select('*')->where('id', $id)->first();
-            // delete old image file
-            \File::delete(public_path('uploads/profiles/').$user->image);
-
-            $user->image = $file_name;
-            return $user->save();
-        }
     }
 
     /**
@@ -336,9 +318,13 @@ class AdminsController extends Controller
 
         if($data)
         {
+            if ($data->image)
+            {
+                \File::delete(public_path('uploads/profiles/').$data->image);
+            }
             $data->delete();
 
-            if ($check_user_roles) 
+            if ($check_user_roles)
             {
                 DB::table($this->role_users_table_name)->where($this->role_users_table_pk,$id)->delete();
             }

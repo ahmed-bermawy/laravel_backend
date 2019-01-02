@@ -6,40 +6,24 @@
         @if(count($array) == 0)
             <h3 class="text-center">No Result Found</h3>
         @else
-            <table class="table table-striped data-table">
+            <table class="table table-striped data-table table-bordered">
                 <thead>
-                    <tr>
-                        @foreach($header as $row)
-                            @if($row['canView'] == true)
-                                @if($row['type'] == '2levels')
-
-                                    @foreach($array[0][$row['dbNameFirstLevel']] as $key=>$record)
-                                        <th>{!! $row['message'].' - '.strtoupper($record['locale']) !!}</th>
-                                    @endforeach
-                                @else
-                                    <th>{{$row['title']}}</th>
-                                @endif
-                            @endif
-                        @endforeach
-                    </tr>
+                <tr>
+                    <th width="30%">Column</th>
+                    <th>Value</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach($array as $key=>$record)
-                        <tr id="{{$record[$table_pk]}}">
-                            @foreach($header as $row)
-                                @if($row['canView'] == true)
-                                    @if($row['type'] == '2levels')
-                                        @foreach($record[$row['dbNameFirstLevel']] as $second_level)
-                                            <td><p>{!! $second_level[$row['dbNameSecondLevel']] !!}</p></td>
-                                        @endforeach
-                                    @else
-                                        <td><p>{!! $record[$row['dbName']] !!}</p></td>
-                                    @endif
-
-                                @endif
-                            @endforeach
-                        </tr>
-                    @endforeach
+                @foreach($array as $key=>$value)
+                    <tr>
+                        <td width="30%"><p>{!! $key !!}</p></td>
+                        @if($key == 'image')
+                            <td><a data-fancybox="" href="{!! url($value) !!}"><img class="img-responsive thumbnail" src="{!! url($value) !!}" alt=""></a></td>
+                        @else
+                            <td><p>{!! $value !!}</p></td>
+                        @endif
+                    </tr>
+                @endforeach
                 </tbody>
             </table>
         @endif
